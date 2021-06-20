@@ -1,71 +1,17 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
-
-import React, {useState} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-  FlatList,
-} from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import React, {useState, useEffect} from 'react';
+import {StyleSheet, View} from 'react-native';
 
 import Row from './Row';
 
-const Section: React.FC<{
-  title: string;
-}> = ({children, title}) => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-};
-
-const App = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  const [boardSize, setBoardSize] = useState(4);
+const Board = ({
+  winner,
+  setWinner,
+  boardSize,
+}: {
+  winner: string;
+  setWinner: any;
+  boardSize: number;
+}) => {
   const [turns, setTurns] = useState(0);
 
   const newBoard = [];
@@ -79,6 +25,9 @@ const App = () => {
 
   const [board, setBoard] = useState(newBoard);
 
+  useEffect(() => {
+    setBoard(newBoard);
+  }, [boardSize]);
   const checkForWin = (x: number, y: number, char: string) => {
     return (
       checkHorizontalPath(y, char) ||
@@ -104,7 +53,6 @@ const App = () => {
   const checkDiagonalPath = (x: number, y: number, char: string) => {
     const checkNegativeSlope = (x: number, y: number, char: string) => {
       for (const [i, row] of board.entries()) {
-        // console.log('CHECKING NEGATIVE', x, i, x + i - y);
         if (row[x + i - y] !== char) {
           return false;
         }
@@ -113,7 +61,6 @@ const App = () => {
     };
     const checkPositiveSlope = (x: number, y: number, char: string) => {
       for (const [i, row] of board.entries()) {
-        // console.log('CHECKING POSITIVE', x, i, x - i + y);
         if (row[x - i + y] !== char) {
           return false;
         }
@@ -128,25 +75,14 @@ const App = () => {
     const row = board[y];
     const winnableSpaces = [];
     const column = board.reduce((column: any, row: any, i) => {
-      // if (row[x] !== char) {
-      //   winnableSpace = {x: i, y};
-      // }
       column.push(row[x]);
       return column;
     }, []);
-    //for (const [i, row] of board.entries()) {
-    console.log(
-      'CHECKING WINNABLE',
-      row.filter(space => space === char).length === boardSize - 1,
-      column.filter(space => space === char).length === boardSize - 1,
-    );
 
     // Check Row
     if (row.filter(space => space === char).length === boardSize - 1) {
       const foundIndex = row.findIndex(space => space === '.');
-      console.log('ROWWWWWWWW', foundIndex);
       if (foundIndex > -1) {
-        console.log('ROW IS WINNABLE', foundIndex);
         winnableSpaces.push({x: foundIndex, y});
       }
     }
@@ -154,7 +90,6 @@ const App = () => {
     // Check Column
     if (column.filter(space => space === char).length === boardSize - 1) {
       const foundIndex = column.findIndex(space => space === '.');
-      console.log('COLUMNNNN', foundIndex);
       if (foundIndex > -1) {
         winnableSpaces.push({x, y: foundIndex});
       }
@@ -176,28 +111,25 @@ const App = () => {
       return slope;
     }, []);
 
-    console.log('NEG SLOPE', negSlope);
-    console.log('POS SLOPE', posSlope);
-
     if (negSlope.filter(space => space === char).length === boardSize - 1) {
       const foundIndex = negSlope.findIndex(space => space === '.');
       if (foundIndex > -1) {
         winnableSpaces.push({
           x:
-            y !== 0 && y !== boardSize - 1
+            y !== 0 && y !== boardSize - 1 && x !== y
               ? foundIndex
                 ? x + y - foundIndex + x
                 : foundIndex
+              : foundIndex >= boardSize - 1
+              ? foundIndex
               : x - y,
           y: foundIndex,
         });
-        console.log('Neg SLOOOOP', foundIndex);
       }
     }
 
     if (posSlope.filter(space => space === char).length === boardSize - 1) {
       const foundIndex = posSlope.findIndex(space => space === '.');
-      console.log('SLOOOOP', foundIndex, winnableSpaces);
       if (foundIndex > -1) {
         winnableSpaces.push({x: x - foundIndex + y, y: foundIndex});
       }
@@ -207,9 +139,7 @@ const App = () => {
   };
 
   const handleTurn = (x: number, y: number, value: string) => {
-    console.log('TURN', turns);
-
-    if (value === '.') {
+    if (value === '.' && !winner) {
       setTurns(turns + 2);
 
       //console.log('EMPTY SPACE');
@@ -231,14 +161,21 @@ const App = () => {
       }
 
       if (turns >= boardSize) {
-        const win = checkForWin(x, y, 'X');
-        console.log('WIN:', win);
-        const updatedBoard = [...board];
-        updatedBoard[y][x] = 'X';
+        const userWin = checkForWin(x, y, 'X');
+        const cpuWin = checkForWin(x, y, 'O');
+        if (userWin) {
+          setWinner('USER');
+        } else if (cpuWin) {
+          setWinner('CPU');
+        } else {
+          console.log('WIN:', turns, turns >= boardSize * boardSize - 1);
+          if (turns >= boardSize * boardSize - 1) {
+            setWinner('TIE');
+          }
+        }
       }
 
       if (!winnableSpaceUser) {
-        console.log('CPU RDM Turn', x, y);
         const getAllAdjacentSpaces = (x: number, y: number) => {
           const openSpaces = [];
           const adjacent = {
@@ -312,7 +249,6 @@ const App = () => {
 
           //console.log('FOUNDDDDDDD', adjacentEmptyWithAdjacentO);
           if (adjacentEmptyWithAdjacentO.length) {
-            console.log('FOUNDDDDDDD', adjacentEmptyWithAdjacentO);
             const updatedBoard = [...board];
             updatedBoard[adjacentEmptyWithAdjacentO[0].y][
               adjacentEmptyWithAdjacentO[0].x
@@ -357,23 +293,18 @@ const App = () => {
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      {/* <Text>TEST</Text> */}
-      <View
-        style={{
-          marginTop: 32,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'white',
-          paddingTop: 32,
-          width: '100%',
-          height: '60%',
-        }}>
-        {board.map((row, i) => {
-          return <Row handleTurn={handleTurn} y={i} row={row} key={i} />;
-        })}
-      </View>
-    </SafeAreaView>
+    <View
+      style={{
+        marginTop: 32,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'white',
+        paddingTop: 32,
+      }}>
+      {board.map((row, i) => {
+        return <Row handleTurn={handleTurn} y={i} row={row} key={i} />;
+      })}
+    </View>
   );
 };
 
@@ -396,4 +327,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+export default Board;
