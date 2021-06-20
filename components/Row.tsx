@@ -29,16 +29,6 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-const Section: React.FC<{
-  title: string;
-}> = ({children, title}) => {
-  return (
-    <View style={styles.sectionContainer}>
-      <Text>TEST</Text>
-    </View>
-  );
-};
-
 const Row = ({
   row,
   handleTurn,
@@ -49,52 +39,48 @@ const Row = ({
   y: number;
 }) => {
   return (
-    <TouchableOpacity
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'white',
-      }}>
+    <View style={styles.container}>
       {row.map((item: any, i: number) => {
         return (
           <View
             key={i}
             onTouchEnd={() => handleTurn(i, y, row[i])}
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              height: 80,
-              borderWidth: 1,
-              borderColor: 'black',
-              width: 100,
-            }}>
-            <Text style={{textAlign: 'center'}}>
+            style={styles.space}>
+            <Text
+              style={
+                row[i] === 'O' ? styles.playerTextUser : styles.playerTextCPU
+              }>
               {row[i] !== '.' && row[i]}
             </Text>
           </View>
         );
       })}
-    </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
   },
-  sectionTitle: {
+  space: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    height: 80,
+    borderColor: '#636363',
+  },
+  playerTextUser: {
     fontSize: 24,
-    fontWeight: '600',
+    color: '#107519',
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  playerTextCPU: {
+    fontSize: 24,
+    color: '#de122d',
   },
 });
 

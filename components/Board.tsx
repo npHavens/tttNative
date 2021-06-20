@@ -13,6 +13,7 @@ const Board = ({
   boardSize: number;
 }) => {
   const [turns, setTurns] = useState(0);
+  const [board, setBoard] = useState([]);
 
   const newBoard = [];
   for (let i = 0; i < boardSize; i++) {
@@ -23,10 +24,9 @@ const Board = ({
     newBoard.push(row);
   }
 
-  const [board, setBoard] = useState(newBoard);
-
   useEffect(() => {
     setBoard(newBoard);
+    setTurns(0);
   }, [boardSize]);
   const checkForWin = (x: number, y: number, char: string) => {
     return (
@@ -142,33 +142,29 @@ const Board = ({
     if (value === '.' && !winner) {
       setTurns(turns + 2);
 
-      //console.log('EMPTY SPACE');
       const updatedBoard = [...board];
-      updatedBoard[y][x] = 'X';
+      updatedBoard[y][x] = 'O';
 
       setBoard(updatedBoard);
 
-      const winnableSpaceUser = checkForWinnable(x, y, 'X')[0];
-      const winnableSpaceCPU = checkForWinnable(x, y, '0')[0];
-
-      console.log('WINNABLE', winnableSpaceUser);
+      const winnableSpaceUser = checkForWinnable(x, y, 'O')[0];
 
       if (winnableSpaceUser) {
         const updatedBoard = [...board];
-        updatedBoard[winnableSpaceUser.y][winnableSpaceUser.x] = 'O';
+        updatedBoard[winnableSpaceUser.y][winnableSpaceUser.x] = 'X';
         setBoard(updatedBoard);
       } else {
       }
 
       if (turns >= boardSize) {
-        const userWin = checkForWin(x, y, 'X');
-        const cpuWin = checkForWin(x, y, 'O');
+        const userWin = checkForWin(x, y, 'O');
+        const cpuWin = checkForWin(x, y, 'X');
         if (userWin) {
           setWinner('USER');
         } else if (cpuWin) {
           setWinner('CPU');
         } else {
-          console.log('WIN:', turns, turns >= boardSize * boardSize - 1);
+          console.log('WIN:', userWin, cpuWin);
           if (turns >= boardSize * boardSize - 1) {
             setWinner('TIE');
           }
@@ -207,14 +203,7 @@ const Board = ({
 
           for (const [i, space] of Object.entries(adjacent)) {
             //console.log('SPACEEEE', space);
-            if (space.val && space.val !== 'X') {
-              openSpaces.push(space);
-            }
-          }
-
-          for (const [i, space] of Object.entries(adjacent)) {
-            //console.log('SPACEEEE', space);
-            if (space.val && space.val !== 'X') {
+            if (space.val && space.val !== 'O') {
               openSpaces.push(space);
             }
           }
@@ -229,7 +218,7 @@ const Board = ({
           const adjacentToOpen = getAllAdjacentSpaces(space.x, space.y);
 
           const adjacentOs = adjacentToOpen.filter(item => {
-            return item.val === 'O';
+            return item.val === 'X';
           });
           // console.log('CHECKING ALL', adjacentOs);
           results = [...results, ...adjacentOs];
@@ -252,7 +241,7 @@ const Board = ({
             const updatedBoard = [...board];
             updatedBoard[adjacentEmptyWithAdjacentO[0].y][
               adjacentEmptyWithAdjacentO[0].x
-            ] = 'O';
+            ] = 'X';
 
             setBoard(updatedBoard);
           }
@@ -261,11 +250,9 @@ const Board = ({
             const rdm =
               adjacentEmptySpaces[Math.floor(Math.random() * spaces.length)];
 
-            console.log('RANDOM SPACE', rdm);
-            //handle no adjacent spaces
             if (rdm) {
               const updatedBoard = [...board];
-              updatedBoard[rdm.y][rdm.x] = 'O';
+              updatedBoard[rdm.y][rdm.x] = 'X';
 
               setBoard(updatedBoard);
             }
@@ -281,9 +268,7 @@ const Board = ({
 
             if (nextOpenSpace) {
               const updatedBoard = [...board];
-              updatedBoard[nextOpenSpace.y][nextOpenSpace.x] = 'O';
-              console.log('GETTING NEXT OPEN SPACE', nextOpenSpace);
-
+              updatedBoard[nextOpenSpace.y][nextOpenSpace.x] = 'X';
               setBoard(updatedBoard);
             }
           }
@@ -293,14 +278,7 @@ const Board = ({
   };
 
   return (
-    <View
-      style={{
-        marginTop: 32,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'white',
-        paddingTop: 32,
-      }}>
+    <View style={styles.container}>
       {board.map((row, i) => {
         return <Row handleTurn={handleTurn} y={i} row={row} key={i} />;
       })}
@@ -309,21 +287,10 @@ const Board = ({
 };
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  container: {
+    borderColor: '#636363',
+    borderWidth: 1,
+    marginTop: 20,
   },
 });
 
