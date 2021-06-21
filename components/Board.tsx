@@ -33,6 +33,7 @@ const Board = ({winner, setWinner, boardSize}: BoardProps) => {
   useEffect(() => {
     setBoard(newBoard);
     setTurns(0);
+    // adding newBoard to deps causes an infinite render
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boardSize]);
 
@@ -47,6 +48,7 @@ const Board = ({winner, setWinner, boardSize}: BoardProps) => {
     if (value === '.' && !winner) {
       setTurns(turns + 2);
 
+      // Check for winners at the beginning of turn
       if (turns >= boardSize) {
         const userWin = checkForWin(board, x, y, 'O');
         const cpuWin = checkForWin(board, x, y, 'X');
@@ -61,13 +63,17 @@ const Board = ({winner, setWinner, boardSize}: BoardProps) => {
         }
       }
 
+      // User move
       handleUpdateBoard(x, y, 'O');
 
+      // First check if there are any rows, columns, or diags that could be won with 1 move
       const winnableSpaceUser = checkForWinnable(board, x, y, 'O')[0];
 
       if (winnableSpaceUser) {
+        // Block user from winning
         handleUpdateBoard(winnableSpaceUser.x, winnableSpaceUser.y, 'X');
       } else {
+        // if it isn't game point look for a random adjacent space to play
         const spaces = getAllAdjacentSpaces(board, x, y);
         const adjacentEmptySpaces = spaces.filter(space => space.val === '.');
 
@@ -75,13 +81,15 @@ const Board = ({winner, setWinner, boardSize}: BoardProps) => {
         for (const space of spaces) {
           const adjacentToOpen = getAllAdjacentSpaces(board, space.x, space.y);
 
-          const adjacentOs = adjacentToOpen.filter(item => {
+          const adjacentXs = adjacentToOpen.filter(item => {
             return item.val === 'X';
           });
-          allPotentialSpaces = [...allPotentialSpaces, ...adjacentOs];
+          // build collection of potential spaces
+          allPotentialSpaces = [...allPotentialSpaces, ...adjacentXs];
         }
 
         if (allPotentialSpaces.length) {
+          // preferring spaces that are adjacent to other spaces the CPU has already played
           const adjacentEmptyWithAdjacentX = getAllAdjacentSpaces(
             board,
             allPotentialSpaces[0].x,
@@ -90,6 +98,7 @@ const Board = ({winner, setWinner, boardSize}: BoardProps) => {
             return item.val === '.';
           });
 
+          // Finally, update the board with the first one in the list
           if (adjacentEmptyWithAdjacentX.length) {
             handleUpdateBoard(
               adjacentEmptyWithAdjacentX[0].x,
@@ -98,6 +107,7 @@ const Board = ({winner, setWinner, boardSize}: BoardProps) => {
             );
           }
         } else {
+          // if there aren't any potential spaces that already played by CPU, need to pick a random adjacent one
           if (adjacentEmptySpaces.length) {
             const rdm =
               adjacentEmptySpaces[Math.floor(Math.random() * spaces.length)];
@@ -106,6 +116,7 @@ const Board = ({winner, setWinner, boardSize}: BoardProps) => {
               handleUpdateBoard(rdm.x, rdm.y, 'X');
             }
           } else {
+            //If there aren't any adjacent spaces, need to find the next open one
             const nextOpenSpace = getNextSpaceOpenSpace(board);
 
             if (nextOpenSpace) {

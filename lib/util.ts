@@ -111,6 +111,8 @@ export const checkForWinnable = (
   ) {
     const foundIndex = negSlope.findIndex((space: string) => space === '.');
     if (foundIndex > -1) {
+      // Messy workaround to handle edge cases for negative slope(Diagonal win)
+      // Would not be submitted to a production app. Ran out of time debugging
       winnableSpaces.push({
         x:
           y !== 0 && y !== board.length - 1 && x !== y

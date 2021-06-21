@@ -31,26 +31,26 @@ const Row = ({row, handleTurn, y}: RowProps) => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: 'white',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   space: {
-    flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    height: 80,
     borderColor: '#636363',
+    borderWidth: 1,
+    flex: 1,
+    height: 80,
+    justifyContent: 'center',
   },
   playerTextUser: {
-    fontSize: 24,
     color: '#107519',
+    fontSize: 24,
   },
   playerTextCPU: {
-    fontSize: 24,
     color: '#de122d',
+    fontSize: 24,
   },
 });
 
