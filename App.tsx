@@ -3,8 +3,8 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
 
@@ -23,7 +23,7 @@ const App = () => {
   const [boardSize, setBoardSize] = useState(defaultBoardSize);
   const [updatedSize, setUpdatedSize] = useState(boardSize);
 
-  const handleInput = useCallback(value => {
+  const handleInput = useCallback((value: string) => {
     setUpdatedSize(Number(value));
   }, []);
 
@@ -76,20 +76,11 @@ const App = () => {
 };
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    margin: 32,
-    justifyContent: 'center',
-  },
-  sectionTitle: {
-    fontSize: 32,
-    fontWeight: '600',
-    color: '#3432a8',
-  },
   boardOptionsContainer: {
-    flexDirection: 'row',
-    marginTop: 15,
-    justifyContent: 'space-between',
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 25,
     width: 320,
   },
   boardOptionsText: {
@@ -99,33 +90,42 @@ const styles = StyleSheet.create({
   boardSizeInput: {
     backgroundColor: '#f0f0f0',
     borderColor: '#636363',
-    borderWidth: 1,
     borderRadius: 3,
+    borderWidth: 1,
     fontSize: 18,
-    paddingTop: 3,
     paddingBottom: 3,
     paddingLeft: 6,
     paddingRight: 6,
+    paddingTop: 3,
+  },
+  sectionContainer: {
+    justifyContent: 'center',
+    margin: 32,
+  },
+  sectionTitle: {
+    color: '#3432a8',
+    fontSize: 32,
+    fontWeight: '600',
   },
   updateBtn: {
     backgroundColor: '#d4e2ff',
     borderRadius: 10,
-    padding: 8,
-    fontSize: 12,
     color: '#636363',
+    fontSize: 12,
+    padding: 8,
   },
   resetBtn: {
     backgroundColor: '#ffd4e1',
     borderRadius: 10,
-    padding: 8,
-    fontSize: 12,
     color: '#636363',
+    fontSize: 12,
+    padding: 8,
   },
   winnerText: {
+    color: '#3432a8',
+    fontSize: 26,
     marginTop: 60,
     textAlign: 'center',
-    fontSize: 26,
-    color: '#3432a8',
   },
 });
 

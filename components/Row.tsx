@@ -1,46 +1,16 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
+import React from 'react';
+import {StyleSheet, Text, View} from 'react-native';
 
-import React, {useState} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  TouchableOpacity,
-  View,
-  FlatList,
-} from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-const Row = ({
-  row,
-  handleTurn,
-  y,
-}: {
+type RowProps = {
   row: string[];
-  handleTurn: any;
+  handleTurn: (x: number, y: number, value: string) => void;
   y: number;
-}) => {
+};
+
+const Row = ({row, handleTurn, y}: RowProps) => {
   return (
     <View style={styles.container}>
-      {row.map((item: any, i: number) => {
+      {row.map((_, i: number) => {
         return (
           <View
             key={i}

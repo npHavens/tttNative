@@ -9,21 +9,21 @@ import {
 } from '../lib/util';
 import Row from './Row';
 
-const Board = ({
-  winner,
-  setWinner,
-  boardSize,
-}: {
-  winner: string;
-  setWinner: any;
-  boardSize: number;
-}) => {
-  const [turns, setTurns] = useState(0);
-  const [board, setBoard] = useState([]);
+import {BoardData, RowData, Space} from '../types';
 
-  const newBoard = [];
+type BoardProps = {
+  winner: string;
+  setWinner: React.Dispatch<React.SetStateAction<string>>;
+  boardSize: number;
+};
+
+const Board = ({winner, setWinner, boardSize}: BoardProps) => {
+  const [turns, setTurns] = useState(0);
+  const [board, setBoard] = useState<BoardData>([]);
+
+  const newBoard: BoardData = [];
   for (let i = 0; i < boardSize; i++) {
-    const row = [];
+    const row: RowData = [];
     for (let j = 0; j < boardSize; j++) {
       row.push('.');
     }
@@ -33,6 +33,7 @@ const Board = ({
   useEffect(() => {
     setBoard(newBoard);
     setTurns(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boardSize]);
 
   const handleUpdateBoard = (x: number, y: number, char: string) => {
@@ -70,8 +71,8 @@ const Board = ({
         const spaces = getAllAdjacentSpaces(board, x, y);
         const adjacentEmptySpaces = spaces.filter(space => space.val === '.');
 
-        let allPotentialSpaces = [];
-        for (const [i, space] of spaces.entries()) {
+        let allPotentialSpaces: Space[] = [];
+        for (const space of spaces) {
           const adjacentToOpen = getAllAdjacentSpaces(board, space.x, space.y);
 
           const adjacentOs = adjacentToOpen.filter(item => {
