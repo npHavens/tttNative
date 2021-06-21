@@ -1,6 +1,12 @@
 import React, {useState, useEffect} from 'react';
 import {StyleSheet, View} from 'react-native';
 
+import {
+  checkForWin,
+  checkForWinnable,
+  getAllAdjacentSpaces,
+  getNextSpaceOpenSpace,
+} from '../lib/util';
 import Row from './Row';
 
 const Board = ({
@@ -28,222 +34,67 @@ const Board = ({
     setBoard(newBoard);
     setTurns(0);
   }, [boardSize]);
-  const checkForWin = (x: number, y: number, char: string) => {
-    return (
-      checkHorizontalPath(y, char) ||
-      checkVerticalPath(x, char) ||
-      checkDiagonalPath(x, y, char)
-    );
-  };
 
-  const checkHorizontalPath = (y: number, char: string) => {
-    const row = board[y];
-    return row.every((space: string) => space === char);
-  };
+  const handleUpdateBoard = (x: number, y: number, char: string) => {
+    const updatedBoard = [...board];
+    updatedBoard[y][x] = char;
 
-  const checkVerticalPath = (x: number, char: string) => {
-    for (const row of board) {
-      if (row[x] !== char) {
-        return false;
-      }
-    }
-    return true;
-  };
-
-  const checkDiagonalPath = (x: number, y: number, char: string) => {
-    const checkNegativeSlope = (x: number, y: number, char: string) => {
-      for (const [i, row] of board.entries()) {
-        if (row[x + i - y] !== char) {
-          return false;
-        }
-      }
-      return true;
-    };
-    const checkPositiveSlope = (x: number, y: number, char: string) => {
-      for (const [i, row] of board.entries()) {
-        if (row[x - i + y] !== char) {
-          return false;
-        }
-      }
-      return true;
-    };
-
-    return checkNegativeSlope(x, y, char) || checkPositiveSlope(x, y, char);
-  };
-
-  const checkForWinnable = (x: number, y: number, char: string) => {
-    const row = board[y];
-    const winnableSpaces = [];
-    const column = board.reduce((column: any, row: any, i) => {
-      column.push(row[x]);
-      return column;
-    }, []);
-
-    // Check Row
-    if (row.filter(space => space === char).length === boardSize - 1) {
-      const foundIndex = row.findIndex(space => space === '.');
-      if (foundIndex > -1) {
-        winnableSpaces.push({x: foundIndex, y});
-      }
-    }
-
-    // Check Column
-    if (column.filter(space => space === char).length === boardSize - 1) {
-      const foundIndex = column.findIndex(space => space === '.');
-      if (foundIndex > -1) {
-        winnableSpaces.push({x, y: foundIndex});
-      }
-    }
-
-    // Check Nagative
-    const negSlope = board.reduce((slope, row, i) => {
-      //console.log('GETTING SLOPE', x - i + y);
-      if (row[x + i - y]) {
-        slope.push(row[x + i - y]);
-      }
-      return slope;
-    }, []);
-
-    const posSlope = board.reduce((slope, row, i) => {
-      if (row[x - i + y]) {
-        slope.push(row[x - i + y]);
-      }
-      return slope;
-    }, []);
-
-    if (negSlope.filter(space => space === char).length === boardSize - 1) {
-      const foundIndex = negSlope.findIndex(space => space === '.');
-      if (foundIndex > -1) {
-        winnableSpaces.push({
-          x:
-            y !== 0 && y !== boardSize - 1 && x !== y
-              ? foundIndex
-                ? x + y - foundIndex + x
-                : foundIndex
-              : foundIndex >= boardSize - 1
-              ? foundIndex
-              : x - y,
-          y: foundIndex,
-        });
-      }
-    }
-
-    if (posSlope.filter(space => space === char).length === boardSize - 1) {
-      const foundIndex = posSlope.findIndex(space => space === '.');
-      if (foundIndex > -1) {
-        winnableSpaces.push({x: x - foundIndex + y, y: foundIndex});
-      }
-    }
-
-    return winnableSpaces;
+    setBoard(updatedBoard);
   };
 
   const handleTurn = (x: number, y: number, value: string) => {
     if (value === '.' && !winner) {
       setTurns(turns + 2);
 
-      const updatedBoard = [...board];
-      updatedBoard[y][x] = 'O';
-
-      setBoard(updatedBoard);
-
-      const winnableSpaceUser = checkForWinnable(x, y, 'O')[0];
-
-      if (winnableSpaceUser) {
-        const updatedBoard = [...board];
-        updatedBoard[winnableSpaceUser.y][winnableSpaceUser.x] = 'X';
-        setBoard(updatedBoard);
-      } else {
-      }
-
       if (turns >= boardSize) {
-        const userWin = checkForWin(x, y, 'O');
-        const cpuWin = checkForWin(x, y, 'X');
+        const userWin = checkForWin(board, x, y, 'O');
+        const cpuWin = checkForWin(board, x, y, 'X');
         if (userWin) {
           setWinner('USER');
         } else if (cpuWin) {
           setWinner('CPU');
         } else {
-          console.log('WIN:', userWin, cpuWin);
           if (turns >= boardSize * boardSize - 1) {
             setWinner('TIE');
           }
         }
       }
 
-      if (!winnableSpaceUser) {
-        const getAllAdjacentSpaces = (x: number, y: number) => {
-          const openSpaces = [];
-          const adjacent = {
-            l: {val: board[y][x - 1], x: x - 1, y},
-            tl: {
-              val: board[y - 1] && board[y - 1][x - 1],
-              x: x - 1,
-              y: y - 1,
-            },
-            t: {val: board[y - 1] && board[y - 1][x], x, y: y - 1},
-            tr: {
-              val: board[y - 1] && board[y - 1][x + 1],
-              x: x + 1,
-              y: y - 1,
-            },
-            r: {val: board[y][x + 1], x: x + 1, y},
-            br: {
-              val: board[y + 1] && board[y + 1][x + 1],
-              x: x + 1,
-              y: y + 1,
-            },
-            b: {val: board[y + 1] && board[y + 1][x], x, y: y + 1},
-            bl: {
-              val: board[y + 1] && board[y + 1][x - 1],
-              x: x - 1,
-              y: y + 1,
-            },
-          };
+      handleUpdateBoard(x, y, 'O');
 
-          for (const [i, space] of Object.entries(adjacent)) {
-            //console.log('SPACEEEE', space);
-            if (space.val && space.val !== 'O') {
-              openSpaces.push(space);
-            }
-          }
-          return openSpaces;
-        };
+      const winnableSpaceUser = checkForWinnable(board, x, y, 'O')[0];
 
-        const spaces = getAllAdjacentSpaces(x, y);
+      if (winnableSpaceUser) {
+        handleUpdateBoard(winnableSpaceUser.x, winnableSpaceUser.y, 'X');
+      } else {
+        const spaces = getAllAdjacentSpaces(board, x, y);
         const adjacentEmptySpaces = spaces.filter(space => space.val === '.');
 
-        let results = [];
+        let allPotentialSpaces = [];
         for (const [i, space] of spaces.entries()) {
-          const adjacentToOpen = getAllAdjacentSpaces(space.x, space.y);
+          const adjacentToOpen = getAllAdjacentSpaces(board, space.x, space.y);
 
           const adjacentOs = adjacentToOpen.filter(item => {
             return item.val === 'X';
           });
-          // console.log('CHECKING ALL', adjacentOs);
-          results = [...results, ...adjacentOs];
+          allPotentialSpaces = [...allPotentialSpaces, ...adjacentOs];
         }
 
-        // console.log('ADJACENT', results);
-
-        if (results.length) {
-          const adjacentEmptyWithAdjacentO = getAllAdjacentSpaces(
-            results[0].x,
-            results[0].y,
+        if (allPotentialSpaces.length) {
+          const adjacentEmptyWithAdjacentX = getAllAdjacentSpaces(
+            board,
+            allPotentialSpaces[0].x,
+            allPotentialSpaces[0].y,
           ).filter(item => {
-            // if (board[y].find(item => item === 'X')) {
             return item.val === '.';
-            // }
           });
 
-          //console.log('FOUNDDDDDDD', adjacentEmptyWithAdjacentO);
-          if (adjacentEmptyWithAdjacentO.length) {
-            const updatedBoard = [...board];
-            updatedBoard[adjacentEmptyWithAdjacentO[0].y][
-              adjacentEmptyWithAdjacentO[0].x
-            ] = 'X';
-
-            setBoard(updatedBoard);
+          if (adjacentEmptyWithAdjacentX.length) {
+            handleUpdateBoard(
+              adjacentEmptyWithAdjacentX[0].x,
+              adjacentEmptyWithAdjacentX[0].y,
+              'X',
+            );
           }
         } else {
           if (adjacentEmptySpaces.length) {
@@ -251,25 +102,13 @@ const Board = ({
               adjacentEmptySpaces[Math.floor(Math.random() * spaces.length)];
 
             if (rdm) {
-              const updatedBoard = [...board];
-              updatedBoard[rdm.y][rdm.x] = 'X';
-
-              setBoard(updatedBoard);
+              handleUpdateBoard(rdm.x, rdm.y, 'X');
             }
           } else {
-            let nextOpenSpace;
-            for (const [i, row] of board.entries()) {
-              row.find((space, j) => {
-                if (space === '.') {
-                  nextOpenSpace = {x: i, y: j};
-                }
-              });
-            }
+            const nextOpenSpace = getNextSpaceOpenSpace(board);
 
             if (nextOpenSpace) {
-              const updatedBoard = [...board];
-              updatedBoard[nextOpenSpace.y][nextOpenSpace.x] = 'X';
-              setBoard(updatedBoard);
+              handleUpdateBoard(nextOpenSpace.x, nextOpenSpace.y, 'X');
             }
           }
         }
