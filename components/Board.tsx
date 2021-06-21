@@ -48,21 +48,6 @@ const Board = ({winner, setWinner, boardSize}: BoardProps) => {
     if (value === '.' && !winner) {
       setTurns(turns + 2);
 
-      // Check for winners at the beginning of turn
-      if (turns >= boardSize) {
-        const userWin = checkForWin(board, x, y, 'O');
-        const cpuWin = checkForWin(board, x, y, 'X');
-        if (userWin) {
-          setWinner('USER');
-        } else if (cpuWin) {
-          setWinner('CPU');
-        } else {
-          if (turns >= boardSize * boardSize - 1) {
-            setWinner('TIE');
-          }
-        }
-      }
-
       // User move
       handleUpdateBoard(x, y, 'O');
 
@@ -122,6 +107,21 @@ const Board = ({winner, setWinner, boardSize}: BoardProps) => {
             if (nextOpenSpace) {
               handleUpdateBoard(nextOpenSpace.x, nextOpenSpace.y, 'X');
             }
+          }
+        }
+      }
+
+      // Check for winners
+      if (turns >= boardSize) {
+        const userWin = checkForWin(board, x, y, 'O');
+        const cpuWin = checkForWin(board, x, y, 'X');
+        if (userWin) {
+          setWinner('USER');
+        } else if (cpuWin) {
+          setWinner('CPU');
+        } else {
+          if (turns >= boardSize * boardSize - 1) {
+            setWinner('TIE');
           }
         }
       }
